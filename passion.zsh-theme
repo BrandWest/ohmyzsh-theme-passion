@@ -52,12 +52,26 @@ function login_info() {
 # directory
 function directory() {
     local color="%{$fg_no_bold[cyan]%}";
-    # REF: https://stackoverflow.com/questions/25944006/bash-current-working-directory-with-replacing-path-to-home-folder
-    local directory="${PWD/#$HOME/~}";
     local color_reset="%{$reset_color%}";
+
+    # Replace $HOME with ~
+    local directory="${PWD/#$HOME/~}";
+
+    # Count the number of slashes
+    local count=$(echo "$directory" | awk -F'/' '{print NF-1}');
+
+    # Check if the count is greater than 3
+    if (( count > 3 )); then
+        # Extract the first and last elements
+        local parent=$(echo "$directory" | awk -F'/' '{print $2}');
+        local child=$(echo "$directory" | awk -F'/' '{print $NF}');
+
+        # Construct the new directory representation
+        directory="~/${parent}/.../${child}";
+    fi
+
     echo "${color}[${directory}]${color_reset}";
 }
-
 
 # git
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_no_bold[cyan]%}[";
@@ -187,7 +201,7 @@ precmd() { # cspell:disable-line
     update_command_status $last_cmd_result;
 
     # output command execute after
-    output_command_execute_after $last_cmd_result;
+    # output_command_execute_after $last_cmd_result;
 }
 
 
